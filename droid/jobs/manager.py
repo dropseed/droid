@@ -104,7 +104,7 @@ class JobManager:
         self.run_job(matching_job, send_notifications)
 
     def get_scheduled_jobs(self):
-        now_in_timezone = maya.now().datetime(to_timezone=self.timezone)
+        now_in_timezone = maya.now().datetime(to_timezone=self.droid.timezone)
         return [x for x in self.jobs if x.scheduled_to_run_in_this_hour(now_in_timezone)]
 
     def run_scheduled_jobs(self, send_notifications=True):
