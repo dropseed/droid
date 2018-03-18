@@ -21,6 +21,7 @@ class Job:
 
         # so you can send it to a specific response url (other other webhook than default)
         self.slack_webhook_url = kwargs.get('slack_webhook_url', None)
+        self.slack_channel = kwargs.get('slack_channel', None)
 
         if self.schedule:
             self.crontab = CronTab(self.schedule)
@@ -80,4 +81,6 @@ class Job:
         pass
 
     def send_slack_message(self, json):
+        if 'channel' not in json and self.slack_channel:
+            json['channel'] = self.slack_channel
         self.droid.slack_manager.send(json, url=self.slack_webhook_url)
