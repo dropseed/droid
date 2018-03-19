@@ -1,10 +1,9 @@
 import logging
-import datetime
 
 from crontab import CronTab
 
 
-class Job:
+class JobType:
     UNKNOWN = 'Unknown'
     SUCCEEDED = 'Succeeded'
     FAILED = 'Failed'
@@ -24,6 +23,9 @@ class Job:
         self.slack_channel = kwargs.get('slack_channel', None)
 
         if self.schedule:
+            # prepend the minute 0 automatically
+            assert len(self.schedule.split()) == 4, 'Schedule should have 4 parts: HOURS DAY_OF_MONTH MONTH DAY_OF_WEEK'
+            self.schedule = '0 ' + self.schedule
             self.crontab = CronTab(self.schedule)
         else:
             self.crontab = None
@@ -41,19 +43,12 @@ class Job:
         self.logger.addHandler(handler)
         self.logger.setLevel(logging.DEBUG)
 
-    def scheduled_to_run_in_this_hour(self, from_when=None):
-        # get the these first, so microseconds are in order
-        seconds_until_next_run = self.crontab.next(from_when)
-        seconds_since_last_run = self.crontab.previous(from_when)
-        now = datetime.datetime.now()
-
-        seconds_passed_this_hour = (now.minute * 60) + now.second + (now.microsecond / 1000000)
-        seconds_remaining_this_hour = 3600 - seconds_passed_this_hour
-
-        will_run = seconds_until_next_run < seconds_remaining_this_hour
-        would_have_run = (seconds_since_last_run * -1) < seconds_passed_this_hour
-
-        return will_run or would_have_run
+    def scheduled_to_run(self, when):
+        # currently we don't care about anything beyond the hour
+        when = when.replace(minute=0, second=1, microsecond=0)
+        seconds_since_last_run = self.crontab.previous(when)
+        # if should have run in this hour, then 'last run' will be 1 sec ago
+        return seconds_since_last_run == -1.0
 
     def run(self):
         raise NotImplementedError
@@ -67,6 +62,12 @@ class Job:
             self.on_failure()
         else:
             raise Exception(f'Unsure how to notify about state "{self.state}"')
+
+    def succeeded(self):
+        self.state = self.SUCCEEDED
+
+    def failed(self):
+        self.state = self.FAILED
 
     def on_success(self):
         """Custom code to run on success"""

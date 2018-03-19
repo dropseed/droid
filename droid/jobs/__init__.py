@@ -1,2 +1,2 @@
-from .job import Job
+from .core import JobType
 from .manager import JobManager

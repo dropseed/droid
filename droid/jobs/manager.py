@@ -17,16 +17,12 @@ class JobManager:
         self.config_path = config_path
         assert os.path.exists(self.config_path), 'config_path does not exist'
 
-        self.types = types
         self.default_job_settings = default_job_settings
 
-        self.register_job_types()
-        self.load_jobs()
+        self.types = types
+        self.type_classes = {x.split('.')[-1]: import_string(x) for x in self.types}
 
-    def register_job_types(self):
-        self.job_classes = {}
-        for name, import_path in self.types.items():
-            self.job_classes[name] = import_string(import_path)
+        self.load_jobs()
 
     def load_jobs(self):
         # allow a directory of configs to be loaded
@@ -49,7 +45,7 @@ class JobManager:
 
             for job in config.get('jobs', []):
                 # create new instances of each job, using settings as kwargs
-                job_class = self.job_classes[job['type']]
+                job_class = self.type_classes[job['type']]
 
                 settings = {
                     **self.default_job_settings,
@@ -103,12 +99,16 @@ class JobManager:
         assert matching_job.can_be_run_manually, 'This job can not be run manually'
         self.run_job(matching_job, send_notifications)
 
-    def get_scheduled_jobs(self):
-        now_in_timezone = maya.now().datetime(to_timezone=self.droid.timezone)
-        return [x for x in self.jobs if x.scheduled_to_run_in_this_hour(now_in_timezone)]
+    def get_scheduled_jobs(self, when=None):
+        if when:
+            dt = maya.when(when, timezone=self.droid.timezone).datetime(to_timezone=self.droid.timezone)
+        else:
+            dt = maya.now().datetime(to_timezone=self.droid.timezone)
+        self.droid.logger.debug(f'Getting scheduled jobs for {dt}')
+        return [x for x in self.jobs if x.scheduled_to_run(dt)]
 
-    def run_scheduled_jobs(self, send_notifications=True):
-        jobs = self.get_scheduled_jobs()
+    def run_scheduled_jobs(self, send_notifications=True, when=None):
+        jobs = self.get_scheduled_jobs(when)
         if jobs:
             self.run_jobs(jobs, send_notifications=send_notifications)
         else:

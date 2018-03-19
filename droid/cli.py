@@ -29,12 +29,13 @@ def jobs(ctx):
 
 @jobs.command('list')
 @click.option('--scheduled', is_flag=True, default=False)
+@click.option('--when')
 @click.pass_context
-def jobs_list(ctx, scheduled):
+def jobs_list(ctx, scheduled, when):
     droid = ctx.obj['droid']
 
     if scheduled:
-        jobs = droid.job_manager.get_scheduled_jobs()
+        jobs = droid.job_manager.get_scheduled_jobs(when)
     else:
         jobs = droid.job_manager.jobs
 
@@ -54,7 +55,8 @@ def jobs_run(ctx, job_name, notifications):
 
 @jobs.command('scheduled')
 @click.option('--notifications/--no-notifications', default=True)
+@click.option('--when')
 @click.pass_context
-def jobs_scheduled(ctx, notifications):
+def jobs_scheduled(ctx, notifications, when):
     droid = ctx.obj['droid']
-    droid.job_manager.run_scheduled_jobs(send_notifications=notifications)
+    droid.job_manager.run_scheduled_jobs(send_notifications=notifications, when=when)
