@@ -85,11 +85,11 @@ class JobManager:
             try:
                 self.run_job(job, send_notifications)
             except Exception as e:
-                self.logger.info('Exception while running job', e)
+                self.droid.logger.info('Exception while running job', e)
                 exceptions.append(e)
 
         if exceptions:
-            self.logger.error(exceptions)
+            self.droid.logger.error(exceptions)
             raise exceptions[0]
 
     def get_job_by_name(self, job_name):
