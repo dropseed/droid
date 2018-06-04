@@ -29,6 +29,7 @@ setup(
         'flask-dance',
         'redis',
         'traitlets',
+        'slackclient',
     ),
     url='https://github.com/dropseed/droid',
     # license=license,

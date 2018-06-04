@@ -4,14 +4,16 @@ import yaml
 import maya
 
 from ..utils.importer import import_string
+from .exceptions import JobTypeDoesNotExist, JobNotFound
 
 
 class JobManager:
+    """JobManager is responsible for loading job objects and running the jobs"""
     def __init__(self,
                  droid,
                  config_path,
                  types,
-                 default_job_settings
+                 default_job_settings={}
                  ):
         self.droid = droid
         self.config_path = config_path
@@ -45,7 +47,10 @@ class JobManager:
 
             for job in config.get('jobs', []):
                 # create new instances of each job, using settings as kwargs
-                job_class = self.type_classes[job['type']]
+                try:
+                    job_class = self.type_classes[job['type']]
+                except KeyError:
+                    raise JobTypeDoesNotExist(job['type'])
 
                 settings = {
                     **self.default_job_settings,
@@ -95,7 +100,8 @@ class JobManager:
 
     def run_job_by_name(self, job_name, send_notifications=True):
         matching_job = self.get_job_by_name(job_name)
-        assert matching_job, f'Found no jobs with the name "{job_name}"'
+        if not matching_job:
+            raise JobNotFound(job_name)
         assert matching_job.can_be_run_manually, 'This job can not be run manually'
         self.run_job(matching_job, send_notifications)
 

@@ -1,6 +1,8 @@
 import logging
 
-from .cli import cli
+from click.testing import CliRunner
+
+from .cli import cli, jobs
 from .server import app
 from .jobs import JobManager
 from .slack import SlackManager
@@ -23,6 +25,9 @@ class Droid:
     def __str__(self):
         return self.name
 
+    def cli(self):
+        return cli(obj={'droid': self})
+
     def configure_logger(self):
         self.logger = logging.getLogger(self.name)
         handler = logging.StreamHandler()
@@ -31,11 +36,17 @@ class Droid:
         self.logger.addHandler(handler)
         self.logger.setLevel(logging.DEBUG)
 
-    def cli(self):
-        return cli(obj={'droid': self})
-
     def is_production(self):
         return self.environment == 'production'
 
     def assert_is_production(self):
         assert self.is_production() == 'production', 'This does not look like your production environment. Be careful.'
+
+    def handle_command(self, command_text, environment=None):
+        runner = CliRunner()
+        result = runner.invoke(jobs, command_text.split(), obj={'droid': self, 'environment': environment})
+        # assert result.exit_code == 0, f'Command failed: {result.exit_code}'
+
+        if result.exception:
+            raise result.exception
+        return result.output

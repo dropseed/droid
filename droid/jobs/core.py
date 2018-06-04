@@ -2,8 +2,12 @@ import logging
 
 from crontab import CronTab
 
+from .exceptions import InvalidScheduleError, InvalidJobName
+
 
 class JobType:
+    """JobType is to be subclassed to implement a specific type of job"""
+
     UNKNOWN = 'Unknown'
     SUCCEEDED = 'Succeeded'
     FAILED = 'Failed'
@@ -14,17 +18,24 @@ class JobType:
         self.results = None
 
         self.name = name
+        if ' ' in self.name:
+            raise InvalidJobName(self.name)
+
         self.droid = droid
         self.schedule = schedule
         self.can_be_run_manually = can_be_run_manually
 
+        # TODO run_by_schedule -- a way to change behavior based on manual/scheduled run
+
         # so you can send it to a specific response url (other other webhook than default)
-        self.slack_webhook_url = kwargs.get('slack_webhook_url', None)
         self.slack_channel = kwargs.get('slack_channel', None)
 
         if self.schedule:
+            # TODO make a JobSchedule class?
             # prepend the minute 0 automatically
-            assert len(self.schedule.split()) == 4, 'Schedule should have 4 parts: HOURS DAY_OF_MONTH MONTH DAY_OF_WEEK'
+            if len(self.schedule.split()) != 4:
+                raise InvalidScheduleError(self.schedule, 'Schedule should have 4 parts: HOURS DAY_OF_MONTH MONTH DAY_OF_WEEK')
+
             self.schedule = '0 ' + self.schedule
             self.crontab = CronTab(self.schedule)
         else:
@@ -84,4 +95,4 @@ class JobType:
     def send_slack_message(self, json):
         if 'channel' not in json and self.slack_channel:
             json['channel'] = self.slack_channel
-        self.droid.slack_manager.send(json, url=self.slack_webhook_url)
+        self.droid.slack_manager.send(json)
