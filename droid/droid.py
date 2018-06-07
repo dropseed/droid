@@ -40,7 +40,7 @@ class Droid:
         return self.environment == 'production'
 
     def assert_is_production(self):
-        assert self.is_production() == 'production', 'This does not look like your production environment. Be careful.'
+        assert self.is_production(), 'This does not look like your production environment. Be careful.'
 
     def handle_command(self, command_text, environment=None):
         runner = CliRunner()
