@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 # with open('README.rst') as f:
@@ -32,7 +32,7 @@ setup(
         'traitlets',
         'slackclient',
     ),
-    py_modules=['droid'],
+    packages=find_packages(exclude=('tests', 'docs')),
     include_package_data=True,
     license='MIT',
     classifiers=[
