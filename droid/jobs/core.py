@@ -55,6 +55,9 @@ class JobType:
         self.logger.setLevel(logging.DEBUG)
 
     def scheduled_to_run(self, when):
+        if not self.crontab:
+            return False
+
         # currently we don't care about anything beyond the hour
         when = when.replace(minute=0, second=1, microsecond=0)
         seconds_since_last_run = self.crontab.previous(when)
