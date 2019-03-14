@@ -1,4 +1,7 @@
-# Droid (in development)
+<p align="center"><img src="icon.svg" alt="Droid" height="140px"></p>
+<h1 align="center">Droid</h1>
+
+*In development.*
 
 Droid is a framework for building a bot in Python.
 
