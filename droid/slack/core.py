@@ -1,4 +1,4 @@
-from slackclient import SlackClient
+from slack import WebClient
 
 
 class SlackManager:
@@ -17,17 +17,14 @@ class SlackManager:
         self.action_request_handler = action_request_handler
         self.options_request_handler = options_request_handler
 
-        self.slack_client = SlackClient(self.bot_token)
+        self.client = WebClient(token=self.bot_token)
 
     def request_is_valid(self, request):
         token = request.form['token']
         return self.verification_token == token
 
     def send(self, json):
-        response = self.slack_client.api_call(
-            'chat.postMessage',
-            **json
-        )
+        response = self.client.chat_postMessage(**json)
 
         self.droid.logger.debug(response)
 
