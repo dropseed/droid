@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask, request, Response, render_template
-from werkzeug.contrib.fixers import ProxyFix
+from werkzeug.middleware.proxy_fix import ProxyFix
 from raven.contrib.flask import Sentry
 
 
