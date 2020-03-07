@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='droid',
-    version='0.1.4',
+    version='0.1.5.dev0',
     description='',
     # long_description=readme,
     long_description_content_type='text/markdown',
