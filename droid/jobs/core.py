@@ -36,8 +36,7 @@ class JobType:
             if len(self.schedule.split()) != 4:
                 raise InvalidScheduleError(self.schedule, 'Schedule should have 4 parts: HOURS DAY_OF_MONTH MONTH DAY_OF_WEEK')
 
-            self.schedule = '0 ' + self.schedule
-            self.crontab = CronTab(self.schedule)
+            self.crontab = CronTab('0 ' + self.schedule)
         else:
             self.crontab = None
 
