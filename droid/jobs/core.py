@@ -29,9 +29,6 @@ class JobType:
 
         # TODO run_by_schedule -- a way to change behavior based on manual/scheduled run
 
-        # so you can send it to a specific response url (other other webhook than default)
-        self.slack_channel = kwargs.get("slack_channel", None)
-
         if self.schedule:
             # TODO make a JobSchedule class?
             # prepend the minute 0 automatically
@@ -45,12 +42,12 @@ class JobType:
         else:
             self.crontab = None
 
-        self.configure_logger()
+        self._configure_logger()
 
     def __str__(self):
         return f"{self.name} ({self.__class__})"
 
-    def configure_logger(self):
+    def _configure_logger(self):
         self.logger = logging.getLogger(self.name)
         handler = logging.StreamHandler()
         formatter = logging.Formatter(
@@ -100,11 +97,3 @@ class JobType:
     def on_error(self, exception=None):
         """Custom code to run on error"""
         pass
-
-    def send_slack_message(self, json):
-        if "channel" not in json and self.slack_channel:
-            json["channel"] = self.slack_channel
-        self.droid.slack_manager.send(json)
-
-    def send_email(self, *args, **kwargs):
-        self.droid.email.send(*args, **kwargs)
