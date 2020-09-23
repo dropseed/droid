@@ -7,11 +7,13 @@ then
     exit 1
 fi
 
+echo "Updating pyproject.toml versions"
+sed -E -i "" "s/version = \"[0-9]+\.[0-9]+\.[0-9]+\"/version = \"$VERSION\"/g" pyproject.toml
+
 echo "Running poetry build"
 poetry build
 
-echo "Updating pyproject.toml versions"
-sed -E -i "" "s/version = \"[0-9]+\.[0-9]+\.[0-9]+\"/version = \"$VERSION\"/g" pyproject.toml
+echo "Committing version and tagging"
 git add pyproject.toml
 git commit -m "Version $VERSION"
 git tag -a "v$VERSION" -m "v$VERSION"
@@ -19,4 +21,5 @@ git tag -a "v$VERSION" -m "v$VERSION"
 echo "Publishing to pypi"
 poetry publish
 
+echo "Pushing git"
 git push && git push --tags
