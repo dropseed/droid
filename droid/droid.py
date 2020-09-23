@@ -9,7 +9,7 @@ from .slack import SlackManager
 
 
 class Droid:
-    def __init__(self, jobs, slack={}, name='droid', timezone=None, environment=None):
+    def __init__(self, jobs, slack={}, name="droid", timezone=None, environment=None):
         self.name = name
         self.timezone = timezone
         self.environment = environment
@@ -29,25 +29,31 @@ class Droid:
         return self.name
 
     def cli(self):
-        return cli(obj={'droid': self})
+        return cli(obj={"droid": self})
 
     def configure_logger(self):
         self.logger = logging.getLogger(self.name)
         handler = logging.StreamHandler()
-        formatter = logging.Formatter('[%(asctime)s "%(name)s" %(levelname)s] %(message)s')
+        formatter = logging.Formatter(
+            '[%(asctime)s "%(name)s" %(levelname)s] %(message)s'
+        )
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
         self.logger.setLevel(logging.DEBUG)
 
     def is_production(self):
-        return self.environment == 'production'
+        return self.environment == "production"
 
     def assert_is_production(self):
-        assert self.is_production(), 'This does not look like your production environment. Be careful.'
+        assert (
+            self.is_production()
+        ), "This does not look like your production environment. Be careful."
 
     def handle_command(self, command_text, environment=None):
         runner = CliRunner()
-        result = runner.invoke(jobs, command_text.split(), obj={'droid': self, 'environment': environment})
+        result = runner.invoke(
+            jobs, command_text.split(), obj={"droid": self, "environment": environment}
+        )
         # assert result.exit_code == 0, f'Command failed: {result.exit_code}'
 
         if result.exception:

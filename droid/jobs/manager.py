@@ -10,15 +10,11 @@ from .core import JobType
 
 class JobManager:
     """JobManager is responsible for loading job objects and running the jobs"""
-    def __init__(self,
-                 droid,
-                 config_path,
-                 types,
-                 default_job_settings={}
-                 ):
+
+    def __init__(self, droid, config_path, types, default_job_settings={}):
         self.droid = droid
         self.config_path = config_path
-        assert os.path.exists(self.config_path), 'config_path does not exist'
+        assert os.path.exists(self.config_path), "config_path does not exist"
 
         self.default_job_settings = default_job_settings
 
@@ -31,7 +27,7 @@ class JobManager:
         type_classes = {}
         for t in types:
             if isinstance(t, str):
-                type_classes[t.split('.')[-1]] = import_string(t)
+                type_classes[t.split(".")[-1]] = import_string(t)
             elif issubclass(t, JobType):
                 type_classes[t.__name__] = t
             else:
@@ -44,7 +40,7 @@ class JobManager:
         for root, subdirs, files in os.walk(self.config_path):
             for f in files:
                 p = os.path.join(root, f)
-                if p.endswith('.yml') or p.endswith('.yaml'):
+                if p.endswith(".yml") or p.endswith(".yaml"):
                     job_config_paths.append(p)
 
         # TODO ensure job name unique, use dict
@@ -52,30 +48,30 @@ class JobManager:
         jobs = []
 
         for job_config_path in job_config_paths:
-            with open(job_config_path, 'r') as f:
+            with open(job_config_path, "r") as f:
                 config = yaml.safe_load(f)
 
-            config_file_default_settings = config.get('default_settings', {})
+            config_file_default_settings = config.get("default_settings", {})
 
-            for job in config.get('jobs', []):
+            for job in config.get("jobs", []):
                 # create new instances of each job, using settings as kwargs
                 try:
-                    job_class = self.type_classes[job['type']]
+                    job_class = self.type_classes[job["type"]]
                 except KeyError:
-                    raise JobTypeDoesNotExist(job['type'])
+                    raise JobTypeDoesNotExist(job["type"])
 
                 settings = {
                     **self.default_job_settings,
                     **config_file_default_settings,
-                    **job.get('settings', {}),
+                    **job.get("settings", {}),
                 }
 
                 job_instance = job_class(
-                    name=job['name'],
+                    name=job["name"],
                     droid=self.droid,
-                    schedule=job.get('schedule', None),
-                    can_be_run_manually=job.get('can_be_run_manually', False),
-                    **settings
+                    schedule=job.get("schedule", None),
+                    can_be_run_manually=job.get("can_be_run_manually", False),
+                    **settings,
                 )
                 jobs.append(job_instance)
 
@@ -99,7 +95,7 @@ class JobManager:
             try:
                 self.run_job(job, send_notifications)
             except Exception as e:
-                self.droid.logger.info('Exception while running job', e)
+                self.droid.logger.info("Exception while running job", e)
                 exceptions.append(e)
 
         if exceptions:
@@ -116,15 +112,17 @@ class JobManager:
         matching_job = self.get_job_by_name(job_name)
         if not matching_job:
             raise JobNotFound(job_name)
-        assert matching_job.can_be_run_manually, 'This job can not be run manually'
+        assert matching_job.can_be_run_manually, "This job can not be run manually"
         self.run_job(matching_job, send_notifications)
 
     def get_scheduled_jobs(self, when=None):
         if when:
-            dt = maya.when(when, timezone=self.droid.timezone).datetime(to_timezone=self.droid.timezone)
+            dt = maya.when(when, timezone=self.droid.timezone).datetime(
+                to_timezone=self.droid.timezone
+            )
         else:
             dt = maya.now().datetime(to_timezone=self.droid.timezone)
-        self.droid.logger.debug(f'Getting scheduled jobs for {dt}')
+        self.droid.logger.debug(f"Getting scheduled jobs for {dt}")
         return [x for x in self.jobs if x.scheduled_to_run(dt)]
 
     def run_scheduled_jobs(self, send_notifications=True, when=None):
@@ -132,7 +130,7 @@ class JobManager:
         if jobs:
             self.run_jobs(jobs, send_notifications=send_notifications)
         else:
-            print('No jobs to run right now')
+            print("No jobs to run right now")
 
     # def run_all_jobs(self, send_notifications=True):
     #     self.run_jobs(self.jobs, send_notifications=send_notifications)

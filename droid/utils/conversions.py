@@ -7,8 +7,8 @@ def ms_to_hours(ms):
 
 
 def parse_iso_date_str(s):
-    return datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%fZ')
+    return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 def number_to_dollars(n):
-    return '${0:,.2f}'.format(n)
+    return "${0:,.2f}".format(n)

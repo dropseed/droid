@@ -8,17 +8,19 @@ from .exceptions import InvalidScheduleError, InvalidJobName
 class JobType:
     """JobType is to be subclassed to implement a specific type of job"""
 
-    UNKNOWN = 'Unknown'
-    SUCCEEDED = 'Succeeded'
-    FAILED = 'Failed'
-    RUNNING = 'Running'
+    UNKNOWN = "Unknown"
+    SUCCEEDED = "Succeeded"
+    FAILED = "Failed"
+    RUNNING = "Running"
 
-    def __init__(self, name, droid, schedule=None, can_be_run_manually=False, *args, **kwargs):
+    def __init__(
+        self, name, droid, schedule=None, can_be_run_manually=False, *args, **kwargs
+    ):
         self.state = self.UNKNOWN
         self.results = None
 
         self.name = name
-        if ' ' in self.name:
+        if " " in self.name:
             raise InvalidJobName(self.name)
 
         self.droid = droid
@@ -28,27 +30,32 @@ class JobType:
         # TODO run_by_schedule -- a way to change behavior based on manual/scheduled run
 
         # so you can send it to a specific response url (other other webhook than default)
-        self.slack_channel = kwargs.get('slack_channel', None)
+        self.slack_channel = kwargs.get("slack_channel", None)
 
         if self.schedule:
             # TODO make a JobSchedule class?
             # prepend the minute 0 automatically
             if len(self.schedule.split()) != 4:
-                raise InvalidScheduleError(self.schedule, 'Schedule should have 4 parts: HOURS DAY_OF_MONTH MONTH DAY_OF_WEEK')
+                raise InvalidScheduleError(
+                    self.schedule,
+                    "Schedule should have 4 parts: HOURS DAY_OF_MONTH MONTH DAY_OF_WEEK",
+                )
 
-            self.crontab = CronTab('0 ' + self.schedule)
+            self.crontab = CronTab("0 " + self.schedule)
         else:
             self.crontab = None
 
         self.configure_logger()
 
     def __str__(self):
-        return f'{self.name} ({self.__class__})'
+        return f"{self.name} ({self.__class__})"
 
     def configure_logger(self):
         self.logger = logging.getLogger(self.name)
         handler = logging.StreamHandler()
-        formatter = logging.Formatter('[%(asctime)s "%(name)s" %(levelname)s] %(message)s')
+        formatter = logging.Formatter(
+            '[%(asctime)s "%(name)s" %(levelname)s] %(message)s'
+        )
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
         self.logger.setLevel(logging.DEBUG)
@@ -68,10 +75,10 @@ class JobType:
 
     def notify_for_state(self):
         if self.state == self.SUCCEEDED:
-            self.logger.debug('Triggering on_success')
+            self.logger.debug("Triggering on_success")
             self.on_success()
         elif self.state == self.FAILED:
-            self.logger.debug('Triggering on_failure')
+            self.logger.debug("Triggering on_failure")
             self.on_failure()
         else:
             raise Exception(f'Unsure how to notify about state "{self.state}"')
@@ -95,6 +102,6 @@ class JobType:
         pass
 
     def send_slack_message(self, json):
-        if 'channel' not in json and self.slack_channel:
-            json['channel'] = self.slack_channel
+        if "channel" not in json and self.slack_channel:
+            json["channel"] = self.slack_channel
         self.droid.slack_manager.send(json)
