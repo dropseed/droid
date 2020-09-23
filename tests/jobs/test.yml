@@ -1,0 +1,4 @@
+jobs:
+- type: TestJob
+  name: test
+  can_be_run_manually: true

@@ -5,6 +5,7 @@ import maya
 
 from ..utils.importer import import_string
 from .exceptions import JobTypeDoesNotExist, JobNotFound
+from .core import JobType
 
 
 class JobManager:
@@ -22,11 +23,22 @@ class JobManager:
         self.default_job_settings = default_job_settings
 
         self.types = types
-        self.type_classes = {x.split('.')[-1]: import_string(x) for x in self.types}
 
-        self.load_jobs()
+        self.type_classes = self.get_type_classes(self.types)
+        self.jobs = self.get_jobs()
 
-    def load_jobs(self):
+    def get_type_classes(self, types):
+        type_classes = {}
+        for t in types:
+            if isinstance(t, str):
+                type_classes[t.split('.')[-1]] = import_string(t)
+            elif issubclass(t, JobType):
+                type_classes[t.__name__] = t
+            else:
+                raise Exception(f"Unknown type for job argument: {t}")
+        return type_classes
+
+    def get_jobs(self):
         # allow a directory of configs to be loaded
         job_config_paths = []
         for root, subdirs, files in os.walk(self.config_path):
@@ -37,7 +49,7 @@ class JobManager:
 
         # TODO ensure job name unique, use dict
 
-        self.jobs = []
+        jobs = []
 
         for job_config_path in job_config_paths:
             with open(job_config_path, 'r') as f:
@@ -65,7 +77,9 @@ class JobManager:
                     can_be_run_manually=job.get('can_be_run_manually', False),
                     **settings
                 )
-                self.jobs.append(job_instance)
+                jobs.append(job_instance)
+
+        return jobs
 
     def run_job(self, job, send_notifications):
         try:

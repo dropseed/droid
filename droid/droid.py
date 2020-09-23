@@ -9,14 +9,17 @@ from .slack import SlackManager
 
 
 class Droid:
-    def __init__(self, jobs, slack, name='droid', timezone=None, environment=None):
+    def __init__(self, jobs, slack={}, name='droid', timezone=None, environment=None):
         self.name = name
         self.timezone = timezone
         self.environment = environment
         self.configure_logger()
 
         self.job_manager = JobManager(droid=self, **jobs)
-        self.slack_manager = SlackManager(droid=self, **slack)
+        if slack:
+            self.slack_manager = SlackManager(droid=self, **slack)
+        else:
+            self.slack_manager = None
 
         app.droid = self
         app.debug = not self.is_production()
