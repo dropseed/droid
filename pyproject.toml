@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "droid"
+version = "0.1.5"
+description = "Simple framework for building a bot"
+authors = ["Dave Gaeddert <dave.gaeddert@dropseed.io>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+configyaml = "0.4.0"
+click = "^7.1.2"
+requests = "^2.24.0"
+humanize = "^2.6.0"
+crontab = "^0.22.9"
+raven = {extras = ["flask"], version = "^6.10.0"}
+flask = "^1.1.2"
+gunicorn = "^20.0.4"
+maya = "^0.6.1"
+flask-dance = "^3.0.0"
+redis = "^3.5.3"
+traitlets = "^5.0.4"
+slackclient = "^2.9.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.0.2"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
