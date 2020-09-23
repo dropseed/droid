@@ -9,11 +9,33 @@ def cli(ctx):
     pass
 
 
-@cli.command()
+@cli.group(invoke_without_command=True)
 @click.pass_context
 def test(ctx):
+    if not ctx.invoked_subcommand:
+        droid = ctx.obj["droid"]
+        click.secho(f"{droid} loaded successfully!", fg="green")
+
+
+@test.command("email")
+@click.option("--from-email", type=str)
+@click.option("--to-email", type=str, required=True)
+@click.option("--subject", type=str, required=True)
+@click.option("--text", type=str)
+@click.option("--html", type=str)
+@click.pass_context
+def test_email(ctx, from_email, to_email, subject, text, html):
     droid = ctx.obj["droid"]
-    click.secho(f"{droid} loaded successfully!", fg="green")
+    droid.email.send(
+        subject=subject,
+        from_email=from_email,
+        to_email=to_email,
+        body_text=text,
+        body_html=html,
+    )
+    click.secho(
+        f"{droid} send email from {from_email} to {to_email} successfully!", fg="green"
+    )
 
 
 @cli.command()

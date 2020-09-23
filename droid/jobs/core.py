@@ -105,3 +105,6 @@ class JobType:
         if "channel" not in json and self.slack_channel:
             json["channel"] = self.slack_channel
         self.droid.slack_manager.send(json)
+
+    def send_email(self, *args, **kwargs):
+        self.droid.email.send(*args, **kwargs)

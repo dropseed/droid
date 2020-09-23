@@ -6,20 +6,29 @@ from .cli import cli, jobs
 from .server import app
 from .jobs import JobManager
 from .slack import SlackManager
+from .email import Email
 
 
 class Droid:
-    def __init__(self, jobs, slack={}, name="droid", timezone=None, environment=None):
+    def __init__(
+        self, jobs, slack={}, email={}, name="droid", timezone=None, environment=None
+    ):
         self.name = name
         self.timezone = timezone
         self.environment = environment
         self.configure_logger()
 
         self.job_manager = JobManager(droid=self, **jobs)
+
         if slack:
             self.slack_manager = SlackManager(droid=self, **slack)
         else:
             self.slack_manager = None
+
+        if email:
+            self.email = Email(droid=self, **email)
+        else:
+            self.email = None
 
         app.droid = self
         app.debug = not self.is_production()
